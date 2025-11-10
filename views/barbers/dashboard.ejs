@@ -1,0 +1,143 @@
+<%- include('../partials/header', { title: 'Dashboard' }) %>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-tachometer-alt"></i> Dashboard - <%= barber.shop_name %></h2>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-clock"></i> Pendientes</h5>
+                <h2><%= stats.pending || 0 %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-check"></i> Confirmados</h5>
+                <h2><%= stats.confirmed || 0 %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-check"></i> Completados</h5>
+                <h2><%= stats.completed || 0 %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-times"></i> Cancelados</h5>
+                <h2><%= stats.cancelled || 0 %></h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Calendar -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar"></i> Google Calendar</h5>
+                <% if (barber.calendar_connected) { %>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Google Calendar conectado
+                    </div>
+                    <form action="/calendar/disconnect" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-unlink"></i> Desconectar
+                        </button>
+                    </form>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Conecta tu Google Calendar para sincronizar automáticamente tus turnos
+                    </div>
+                    <a href="/calendar/connect" class="btn btn-primary">
+                        <i class="fab fa-google"></i> Conectar Google Calendar
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos turnos -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Últimos Turnos</h5>
+                <a href="/barbers/appointments" class="btn btn-sm btn-primary">Ver todos</a>
+            </div>
+            <div class="card-body">
+                <% if (appointments.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Cliente</th>
+                                    <th>Servicio</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% appointments.forEach(apt => { %>
+                                    <tr>
+                                        <td><%= new Date(apt.appointment_date).toLocaleDateString('es-AR') %></td>
+                                        <td><%= apt.appointment_time %></td>
+                                        <td>
+                                            <%= apt.client_name %><br>
+                                            <small class="text-muted"><%= apt.client_phone %></small>
+                                        </td>
+                                        <td><%= apt.service_name || 'Sin especificar' %></td>
+                                        <td>
+                                            <% if (apt.status === 'pending') { %>
+                                                <span class="badge bg-warning">Pendiente</span>
+                                            <% } else if (apt.status === 'confirmed') { %>
+                                                <span class="badge bg-success">Confirmado</span>
+                                            <% } else if (apt.status === 'completed') { %>
+                                                <span class="badge bg-primary">Completado</span>
+                                            <% } else if (apt.status === 'cancelled') { %>
+                                                <span class="badge bg-danger">Cancelado</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <a href="/appointments/<%= apt.id %>" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Ver
+                                            </a>
+                                            <% if (apt.status === 'pending') { %>
+                                                <form action="/appointments/<%= apt.id %>/confirm" method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check"></i> Confirmar
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No tienes turnos registrados aún
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

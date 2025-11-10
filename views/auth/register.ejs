@@ -1,0 +1,80 @@
+<%- include('../partials/header', { title: 'Registro de Barbero' }) %>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-user-plus"></i> Registro de Barbero</h3>
+            </div>
+            <div class="card-body">
+                <form action="/auth/register" method="POST">
+                    <h5 class="mb-3">Datos Personales</h5>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="+54911123456">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña *</label>
+                        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+                        <small class="text-muted">Mínimo 6 caracteres</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password2" class="form-label">Confirmar Contraseña *</label>
+                        <input type="password" class="form-control" id="password2" name="password2" minlength="6" required>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">Datos de la Barbería</h5>
+
+                    <div class="mb-3">
+                        <label for="shop_name" class="form-label">Nombre del Local *</label>
+                        <input type="text" class="form-control" id="shop_name" name="shop_name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Dirección *</label>
+                        <input type="text" class="form-control" id="address" name="address" placeholder="Av. Corrientes 1234" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="neighborhood" class="form-label">Barrio *</label>
+                            <input type="text" class="form-control" id="neighborhood" name="neighborhood" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">Ciudad *</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus"></i> Registrarse
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p>¿Ya tienes cuenta? <a href="/auth/login">Inicia sesión aquí</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

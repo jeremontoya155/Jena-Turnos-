@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: 'Encuentra tu Barbero' }) %>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Buscar Barberos</h5>
+                <form method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Barrio</label>
+                        <input type="text" name="neighborhood" class="form-control" value="<%= search.neighborhood || '' %>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" name="city" class="form-control" value="<%= search.city || '' %>">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <% if (barbers.length > 0) { %>
+            <% barbers.forEach(barber => { %>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= barber.shop_name %></h5>
+                        <p class="card-text">
+                            <strong>Dirección:</strong> <%= barber.address %>, <%= barber.neighborhood %><br>
+                            <strong>Barbero:</strong> <%= barber.barber_name %><br>
+                            <strong>Turnos confirmados:</strong> <%= barber.total_appointments %>
+                        </p>
+                        <a href="/barber/<%= barber.id %>" class="btn btn-primary">Ver Perfil y Agendar</a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="alert alert-info">No se encontraron barberos en tu zona.</div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
