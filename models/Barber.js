@@ -53,8 +53,8 @@ class Barber {
 
   static async create(userId, data) {
     const result = await pool.query(
-      `INSERT INTO barbers (user_id, shop_name, address, neighborhood, city, description, hourly_rate)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO barbers (user_id, shop_name, address, neighborhood, city, description, hourly_rate, is_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, true)
        RETURNING *`,
       [userId, data.shop_name, data.address, data.neighborhood, data.city, data.description, data.hourly_rate]
     );
