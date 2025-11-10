@@ -1,0 +1,144 @@
+<%- include('../partials/header', { title: 'Mis Servicios' }) %>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cut"></i> Mis Servicios</h2>
+            <a href="/barbers/profile" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Perfil
+            </a>
+        </div>
+        
+        <!-- Formulario para agregar servicio -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-plus"></i> Agregar Nuevo Servicio</h5>
+            </div>
+            <div class="card-body">
+                <form action="/barbers/services" method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Nombre del Servicio *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <label for="price" class="form-label">Precio *</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <label for="duration_minutes" class="form-label">Duración (min) *</label>
+                            <input type="number" class="form-control" id="duration_minutes" name="duration_minutes" value="30" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Servicio
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Lista de servicios -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Servicios Registrados</h5>
+            </div>
+            <div class="card-body">
+                <% if (services.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>Descripción</th>
+                                    <th>Precio</th>
+                                    <th>Duración</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% services.forEach(service => { %>
+                                    <tr>
+                                        <td><strong><%= service.name %></strong></td>
+                                        <td><%= service.description || '-' %></td>
+                                        <td><strong>$<%= service.price %></strong></td>
+                                        <td><%= service.duration_minutes %> min</td>
+                                        <td>
+                                            <% if (service.is_active) { %>
+                                                <span class="badge bg-success">Activo</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<%= service.id %>">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <form action="/barbers/services/<%= service.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal para editar -->
+                                    <div class="modal fade" id="editModal<%= service.id %>" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Editar Servicio</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="/barbers/services/<%= service.id %>/update" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Nombre *</label>
+                                                            <input type="text" class="form-control" name="name" value="<%= service.name %>" required>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Descripción</label>
+                                                            <textarea class="form-control" name="description" rows="2"><%= service.description || '' %></textarea>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">Precio *</label>
+                                                                <input type="number" class="form-control" name="price" value="<%= service.price %>" step="0.01" required>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">Duración (min) *</label>
+                                                                <input type="number" class="form-control" name="duration_minutes" value="<%= service.duration_minutes %>" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No tienes servicios registrados. Usa el formulario de arriba para agregar tu primer servicio.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

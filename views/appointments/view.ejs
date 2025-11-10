@@ -1,0 +1,147 @@
+<%- include('../partials/header', { title: 'Detalles del Turno' }) %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calendar-alt"></i> Detalles del Turno</h2>
+            <a href="<%= user && user.role === 'barber' ? '/barbers/appointments' : '/' %>" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+        
+        <!-- Estado del turno -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Estado del Turno</h5>
+                        <% if (appointment.status === 'pending') { %>
+                            <span class="badge bg-warning text-dark fs-6">
+                                <i class="fas fa-clock"></i> Pendiente de Confirmación
+                            </span>
+                        <% } else if (appointment.status === 'confirmed') { %>
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check"></i> Confirmado
+                            </span>
+                        <% } else if (appointment.status === 'completed') { %>
+                            <span class="badge bg-primary fs-6">
+                                <i class="fas fa-check-double"></i> Completado
+                            </span>
+                        <% } else if (appointment.status === 'cancelled') { %>
+                            <span class="badge bg-danger fs-6">
+                                <i class="fas fa-times"></i> Cancelado
+                            </span>
+                        <% } %>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <% if (user && user.role === 'barber' && appointment.status === 'pending') { %>
+                            <form action="/appointments/<%= appointment.id %>/confirm" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check"></i> Confirmar Turno
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del turno -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información del Turno</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-store"></i> Barbería:</strong><br><%= appointment.shop_name %></p>
+                        <p><strong><i class="fas fa-user"></i> Barbero:</strong><br><%= appointment.barber_name %></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-calendar"></i> Fecha:</strong><br><%= new Date(appointment.appointment_date).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                        <p><strong><i class="fas fa-clock"></i> Hora:</strong><br><%= appointment.appointment_time %></p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-user-circle"></i> Cliente:</strong><br><%= appointment.client_name %></p>
+                        <p><strong><i class="fas fa-phone"></i> Teléfono:</strong><br><%= appointment.client_phone %></p>
+                    </div>
+                    <div class="col-md-6">
+                        <% if (appointment.service_name) { %>
+                            <p><strong><i class="fas fa-cut"></i> Servicio:</strong><br><%= appointment.service_name %></p>
+                            <% if (appointment.price) { %>
+                                <p><strong><i class="fas fa-dollar-sign"></i> Precio:</strong><br>$<%= appointment.price %></p>
+                            <% } %>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <% if (appointment.notes) { %>
+                    <hr>
+                    <p><strong><i class="fas fa-sticky-note"></i> Notas:</strong><br><%= appointment.notes %></p>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- Mensajes -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-comments"></i> Mensajes</h5>
+            </div>
+            <div class="card-body">
+                <div class="messages-container mb-3" style="max-height: 400px; overflow-y: auto;">
+                    <% if (messages.length > 0) { %>
+                        <% messages.forEach(msg => { %>
+                            <div class="message mb-3 <%= msg.sender_type === 'barber' ? 'text-end' : '' %>">
+                                <div class="d-inline-block <%= msg.sender_type === 'barber' ? 'bg-primary text-white' : 'bg-light' %> p-3 rounded" style="max-width: 70%;">
+                                    <strong><%= msg.sender_name %></strong>
+                                    <small class="d-block text-muted <%= msg.sender_type === 'barber' ? 'text-white-50' : '' %>">
+                                        <%= new Date(msg.created_at).toLocaleString('es-AR') %>
+                                    </small>
+                                    <p class="mb-0 mt-2"><%= msg.message %></p>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">No hay mensajes aún.</p>
+                    <% } %>
+                </div>
+                
+                <% if (appointment.status !== 'cancelled' && appointment.status !== 'completed') { %>
+                    <form action="/appointments/<%= appointment.id %>/message" method="POST">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="message" placeholder="Escribe un mensaje..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Enviar
+                            </button>
+                        </div>
+                    </form>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- Acciones -->
+        <% if (appointment.status !== 'cancelled' && appointment.status !== 'completed') { %>
+            <div class="card mt-4 border-danger">
+                <div class="card-body">
+                    <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Cancelar Turno</h5>
+                    <p class="text-muted">Si necesitas cancelar este turno, por favor indica el motivo.</p>
+                    <form action="/appointments/<%= appointment.id %>/cancel" method="POST">
+                        <div class="mb-3">
+                            <textarea class="form-control" name="reason" rows="2" placeholder="Motivo de cancelación" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de cancelar este turno?')">
+                            <i class="fas fa-times"></i> Cancelar Turno
+                        </button>
+                    </form>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

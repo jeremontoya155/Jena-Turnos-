@@ -1,0 +1,150 @@
+<%- include('../partials/header', { title: 'Mis Turnos' }) %>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calendar-check"></i> Mis Turnos</h2>
+            <a href="/barbers/dashboard" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Estado</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Todos</option>
+                            <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pendientes</option>
+                            <option value="confirmed" <%= filters.status === 'confirmed' ? 'selected' : '' %>>Confirmados</option>
+                            <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completados</option>
+                            <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="date" name="date" value="<%= filters.date || '' %>">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block w-100">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Lista de turnos -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Turnos</h5>
+            </div>
+            <div class="card-body">
+                <% if (appointments.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Cliente</th>
+                                    <th>Contacto</th>
+                                    <th>Servicio</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% appointments.forEach((apt, index) => { %>
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td><%= new Date(apt.appointment_date).toLocaleDateString('es-AR') %></td>
+                                        <td><strong><%= apt.appointment_time %></strong></td>
+                                        <td><%= apt.client_name %></td>
+                                        <td>
+                                            <small>
+                                                <i class="fas fa-phone"></i> <%= apt.client_phone %><br>
+                                                <% if (apt.client_email) { %>
+                                                    <i class="fas fa-envelope"></i> <%= apt.client_email %>
+                                                <% } %>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <%= apt.service_name || 'Sin especificar' %><br>
+                                            <% if (apt.price) { %>
+                                                <small class="text-muted">$<%= apt.price %></small>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (apt.status === 'pending') { %>
+                                                <span class="badge bg-warning text-dark">Pendiente</span>
+                                            <% } else if (apt.status === 'confirmed') { %>
+                                                <span class="badge bg-success">Confirmado</span>
+                                            <% } else if (apt.status === 'completed') { %>
+                                                <span class="badge bg-primary">Completado</span>
+                                            <% } else if (apt.status === 'cancelled') { %>
+                                                <span class="badge bg-danger">Cancelado</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <a href="/appointments/<%= apt.id %>" class="btn btn-sm btn-info" title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <% if (apt.status === 'pending') { %>
+                                                <form action="/appointments/<%= apt.id %>/confirm" method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Confirmar">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                            <% if (apt.status !== 'cancelled' && apt.status !== 'completed') { %>
+                                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal<%= apt.id %>" title="Cancelar">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal de cancelación -->
+                                    <div class="modal fade" id="cancelModal<%= apt.id %>" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Cancelar Turno</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="/appointments/<%= apt.id %>/cancel" method="POST">
+                                                    <div class="modal-body">
+                                                        <p>¿Estás seguro de cancelar el turno de <strong><%= apt.client_name %></strong>?</p>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Motivo de cancelación</label>
+                                                            <textarea class="form-control" name="reason" rows="3" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
+                                                        <button type="submit" class="btn btn-danger">Sí, cancelar turno</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No tienes turnos registrados con estos filtros.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

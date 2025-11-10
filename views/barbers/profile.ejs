@@ -1,0 +1,111 @@
+<%- include('../partials/header', { title: 'Mi Perfil' }) %>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2><i class="fas fa-user"></i> Mi Perfil</h2>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Información Personal</h5>
+            </div>
+            <div class="card-body">
+                <form action="/barbers/profile" method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" readonly>
+                        <small class="text-muted">Nombre del usuario (no editable)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" value="<%= user.email %>" readonly>
+                        <small class="text-muted">Email del usuario (no editable)</small>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Información de la Barbería</h5>
+                    
+                    <div class="mb-3">
+                        <label for="shop_name" class="form-label">Nombre del Local *</label>
+                        <input type="text" class="form-control" id="shop_name" name="shop_name" value="<%= barber.shop_name %>" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Dirección *</label>
+                        <input type="text" class="form-control" id="address" name="address" value="<%= barber.address %>" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="neighborhood" class="form-label">Barrio *</label>
+                            <input type="text" class="form-control" id="neighborhood" name="neighborhood" value="<%= barber.neighborhood %>" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">Ciudad *</label>
+                            <input type="text" class="form-control" id="city" name="city" value="<%= barber.city %>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><%= barber.description || '' %></textarea>
+                        <small class="text-muted">Describe tu barbería, servicios especiales, etc.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="hourly_rate" class="form-label">Tarifa por Hora (opcional)</label>
+                        <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" value="<%= barber.hourly_rate || '' %>" step="0.01">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Servicios -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-cut"></i> Mis Servicios</h5>
+                <a href="/barbers/services" class="btn btn-sm btn-primary">Gestionar Servicios</a>
+            </div>
+            <div class="card-body">
+                <% if (services.length > 0) { %>
+                    <div class="list-group">
+                        <% services.forEach(service => { %>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1"><%= service.name %></h6>
+                                    <strong>$<%= service.price %></strong>
+                                </div>
+                                <% if (service.description) { %>
+                                    <p class="mb-1 text-muted"><%= service.description %></p>
+                                <% } %>
+                                <small class="text-muted"><%= service.duration_minutes %> minutos</small>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No tienes servicios registrados. 
+                        <a href="/barbers/services">Agrega tu primer servicio</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- Horarios -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock"></i> Mis Horarios</h5>
+                <a href="/barbers/schedule" class="btn btn-sm btn-primary">Gestionar Horarios</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

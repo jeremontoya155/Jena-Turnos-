@@ -1,0 +1,179 @@
+<%- include('../partials/header', { title: barber.shop_name }) %>
+
+<div class="row">
+    <div class="col-md-8">
+        <h2><i class="fas fa-store"></i> <%= barber.shop_name %></h2>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle"></i> Información</h5>
+                <p><strong>Barbero:</strong> <%= barber.name %></p>
+                <p><strong>Dirección:</strong> <%= barber.address %>, <%= barber.neighborhood %>, <%= barber.city %></p>
+                <% if (barber.phone) { %>
+                    <p><strong>Teléfono:</strong> <%= barber.phone %></p>
+                <% } %>
+                <% if (barber.description) { %>
+                    <p class="text-muted"><%= barber.description %></p>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-cut"></i> Servicios</h5>
+            </div>
+            <div class="card-body">
+                <% if (services.length > 0) { %>
+                    <div class="list-group">
+                        <% services.forEach(service => { %>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1"><%= service.name %></h6>
+                                    <strong class="text-success">$<%= service.price %></strong>
+                                </div>
+                                <% if (service.description) { %>
+                                    <p class="mb-1 text-muted"><%= service.description %></p>
+                                <% } %>
+                                <small class="text-muted"><i class="fas fa-clock"></i> <%= service.duration_minutes %> minutos</small>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay servicios disponibles en este momento.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-calendar-alt"></i> Horarios de Atención</h5>
+            </div>
+            <div class="card-body">
+                <% if (schedule.length > 0) { %>
+                    <table class="table table-sm">
+                        <tbody>
+                            <% schedule.forEach(day => { %>
+                                <tr>
+                                    <td><strong><%= day.day_name %></strong></td>
+                                    <td><%= day.start_time %> - <%= day.end_time %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay horarios configurados.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-plus"></i> Solicitar Turno</h5>
+            </div>
+            <div class="card-body">
+                <form action="/appointments/request" method="POST" id="appointmentForm">
+                    <input type="hidden" name="barber_id" value="<%= barber.id %>">
+                    
+                    <div class="mb-3">
+                        <label for="client_name" class="form-label">Tu Nombre *</label>
+                        <input type="text" class="form-control" id="client_name" name="client_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="client_phone" class="form-label">Teléfono *</label>
+                        <input type="tel" class="form-control" id="client_phone" name="client_phone" placeholder="+54911123456" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="client_email" class="form-label">Email (opcional)</label>
+                        <input type="email" class="form-control" id="client_email" name="client_email">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="service_id" class="form-label">Servicio</label>
+                        <select class="form-select" id="service_id" name="service_id">
+                            <option value="">Sin especificar</option>
+                            <% services.forEach(service => { %>
+                                <option value="<%= service.id %>"><%= service.name %> - $<%= service.price %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="appointment_date" class="form-label">Fecha *</label>
+                        <input type="date" class="form-control" id="appointment_date" name="appointment_date" required min="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="appointment_time" class="form-label">Hora *</label>
+                        <select class="form-select" id="appointment_time" name="appointment_time" required>
+                            <option value="">Selecciona una fecha primero</option>
+                        </select>
+                        <small class="text-muted" id="timeLoading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando horarios...
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notas</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar-check"></i> Solicitar Turno
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Cargar horarios disponibles cuando se selecciona una fecha
+document.getElementById('appointment_date').addEventListener('change', async function() {
+    const date = this.value;
+    const barberId = <%= barber.id %>;
+    const timeSelect = document.getElementById('appointment_time');
+    const timeLoading = document.getElementById('timeLoading');
+    
+    if (!date) return;
+    
+    timeLoading.style.display = 'block';
+    timeSelect.disabled = true;
+    timeSelect.innerHTML = '<option value="">Cargando...</option>';
+    
+    try {
+        const response = await fetch(`/appointments/api/available-slots?barber_id=${barberId}&date=${date}`);
+        const data = await response.json();
+        
+        timeSelect.innerHTML = '';
+        
+        if (data.slots && data.slots.length > 0) {
+            data.slots.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = slot;
+                timeSelect.appendChild(option);
+            });
+        } else {
+            timeSelect.innerHTML = '<option value="">No hay horarios disponibles</option>';
+        }
+    } catch (error) {
+        console.error('Error cargando horarios:', error);
+        timeSelect.innerHTML = '<option value="">Error cargando horarios</option>';
+    } finally {
+        timeLoading.style.display = 'none';
+        timeSelect.disabled = false;
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

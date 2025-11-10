@@ -1,0 +1,90 @@
+<%- include('../partials/header', { title: 'Mis Horarios' }) %>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-clock"></i> Horarios de Trabajo</h2>
+            <a href="/barbers/profile" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Perfil
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted">Configura tus horarios de trabajo para cada día de la semana. Los clientes solo podrán agendar turnos en estos horarios.</p>
+                
+                <form action="/barbers/schedule" method="POST">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Día</th>
+                                    <th>Activo</th>
+                                    <th>Hora Inicio</th>
+                                    <th>Hora Fin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% schedule.forEach((day, index) => { %>
+                                    <tr>
+                                        <td><strong><%= day.day_name %></strong></td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input day-toggle" type="checkbox" 
+                                                       id="active_<%= day.day_of_week %>" 
+                                                       name="schedules[<%= index %>][is_active]" 
+                                                       value="true"
+                                                       <%= day.is_active ? 'checked' : '' %>
+                                                       data-day="<%= day.day_of_week %>">
+                                                <input type="hidden" name="schedules[<%= index %>][day_of_week]" value="<%= day.day_of_week %>">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="time" class="form-control time-input" 
+                                                   name="schedules[<%= index %>][start_time]" 
+                                                   value="<%= day.start_time || '09:00' %>"
+                                                   <%= day.is_active ? '' : 'disabled' %>
+                                                   data-day="<%= day.day_of_week %>">
+                                        </td>
+                                        <td>
+                                            <input type="time" class="form-control time-input" 
+                                                   name="schedules[<%= index %>][end_time]" 
+                                                   value="<%= day.end_time || '18:00' %>"
+                                                   <%= day.is_active ? '' : 'disabled' %>
+                                                   data-day="<%= day.day_of_week %>">
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Los turnos se generarán en intervalos de 30 minutos dentro de los horarios configurados.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Guardar Horarios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle de inputs de tiempo cuando se activa/desactiva un día
+document.querySelectorAll('.day-toggle').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+        const day = this.dataset.day;
+        const timeInputs = document.querySelectorAll(`.time-input[data-day="${day}"]`);
+        timeInputs.forEach(input => {
+            input.disabled = !this.checked;
+        });
+    });
+});
+</script>
+
+<%- include('../partials/footer') %>
