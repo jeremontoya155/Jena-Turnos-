@@ -105,8 +105,31 @@ exports.confirmAppointment = async (req, res) => {
       return res.redirect('/barbers/appointments');
     }
 
+    // Intentar sincronizar con Google Calendar si está conectado
+    let googleEventId = null;
+    try {
+      const calendarHelper = require('../utils/calendarHelper');
+      const service = await Service.findById(appointment.service_id);
+      
+      googleEventId = await calendarHelper.createAppointmentEvent(barber.id, {
+        date: appointment.appointment_date,
+        time: appointment.appointment_time,
+        duration: appointment.duration_minutes || 30,
+        clientName: appointment.client_name,
+        clientPhone: appointment.client_phone,
+        clientEmail: appointment.client_email,
+        serviceName: service ? service.name : 'Servicio de barbería',
+        notes: appointment.notes
+      });
+      
+      console.log('✓ Evento creado en Google Calendar:', googleEventId);
+    } catch (calendarError) {
+      console.log('Google Calendar no sincronizado (normal si no está conectado):', calendarError.message);
+      // Continuar sin Google Calendar
+    }
+
     // Actualizar estado
-    await Appointment.updateStatus(id, 'confirmed');
+    await Appointment.updateStatus(id, 'confirmed', googleEventId);
 
     // Crear mensaje de confirmación
     await pool.query(
@@ -115,9 +138,7 @@ exports.confirmAppointment = async (req, res) => {
       [id, req.user.name, 'Turno confirmado']
     );
 
-    // TODO: Aquí se puede agregar integración con Google Calendar
-
-    req.flash('success', 'Turno confirmado exitosamente');
+    req.flash('success', 'Turno confirmado exitosamente' + (googleEventId ? ' y sincronizado con Google Calendar' : ''));
     res.redirect(`/appointments/${id}`);
   } catch (error) {
     console.error('Error confirmando turno:', error);
@@ -144,6 +165,18 @@ exports.cancelAppointment = async (req, res) => {
       if (appointment.barber_id !== barber.id) {
         req.flash('error', 'No tienes permiso para cancelar este turno');
         return res.redirect('/');
+      }
+    }
+
+    // Intentar eliminar de Google Calendar si existe
+    if (appointment.google_event_id) {
+      try {
+        const calendarHelper = require('../utils/calendarHelper');
+        await calendarHelper.deleteAppointmentEvent(appointment.barber_id, appointment.google_event_id);
+        console.log('✓ Evento eliminado de Google Calendar');
+      } catch (calendarError) {
+        console.log('No se pudo eliminar de Google Calendar:', calendarError.message);
+        // Continuar con la cancelación local
       }
     }
 

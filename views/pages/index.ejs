@@ -4,39 +4,76 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Buscar Barberos</h5>
-                <form method="GET">
+                <h5 class="card-title"><i class="fas fa-search"></i> Buscar Barberos</h5>
+                <form method="GET" action="/">
                     <div class="mb-3">
                         <label class="form-label">Barrio</label>
-                        <input type="text" name="neighborhood" class="form-control" value="<%= search.neighborhood || '' %>">
+                        <input type="text" name="neighborhood" class="form-control" 
+                               value="<%= typeof search !== 'undefined' && search.neighborhood ? search.neighborhood : '' %>" 
+                               placeholder="Ej: Centro, Palermo">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Ciudad</label>
-                        <input type="text" name="city" class="form-control" value="<%= search.city || '' %>">
+                        <input type="text" name="city" class="form-control" 
+                               value="<%= typeof search !== 'undefined' && search.city ? search.city : '' %>" 
+                               placeholder="Ej: Buenos Aires, Córdoba">
                     </div>
-                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                    <% if ((typeof search !== 'undefined' && search.neighborhood) || (typeof search !== 'undefined' && search.city)) { %>
+                        <a href="/" class="btn btn-secondary w-100 mt-2">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    <% } %>
                 </form>
             </div>
         </div>
     </div>
     
     <div class="col-md-8">
-        <% if (barbers.length > 0) { %>
+        <h4 class="mb-3">
+            <i class="fas fa-store"></i> 
+            <% if ((typeof search !== 'undefined' && search.neighborhood) || (typeof search !== 'undefined' && search.city)) { %>
+                Resultados de búsqueda
+            <% } else { %>
+                Todas las barberías disponibles
+            <% } %>
+        </h4>
+        
+        <% if (typeof barbers !== 'undefined' && barbers && barbers.length > 0) { %>
             <% barbers.forEach(barber => { %>
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title"><%= barber.shop_name %></h5>
-                        <p class="card-text">
-                            <strong>Dirección:</strong> <%= barber.address %>, <%= barber.neighborhood %><br>
-                            <strong>Barbero:</strong> <%= barber.barber_name %><br>
-                            <strong>Turnos confirmados:</strong> <%= barber.total_appointments %>
-                        </p>
-                        <a href="/barber/<%= barber.id %>" class="btn btn-primary">Ver Perfil y Agendar</a>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">
+                                    <i class="fas fa-cut text-primary"></i> <%= barber.shop_name %>
+                                </h5>
+                                <p class="card-text">
+                                    <strong><i class="fas fa-user"></i> Barbero:</strong> <%= barber.barber_name %><br>
+                                    <strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong> <%= barber.address %>, <%= barber.neighborhood %>, <%= barber.city %><br>
+                                    <strong><i class="fas fa-calendar-check"></i> Turnos confirmados:</strong> <%= barber.total_appointments || 0 %>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
+                                <a href="/barber/<%= barber.id %>" class="btn btn-primary">
+                                    <i class="fas fa-eye"></i> Ver Perfil y Agendar
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             <% }) %>
         <% } else { %>
-            <div class="alert alert-info">No se encontraron barberos en tu zona.</div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <% if ((typeof search !== 'undefined' && search.neighborhood) || (typeof search !== 'undefined' && search.city)) { %>
+                    No se encontraron barberos en la zona especificada. <a href="/">Ver todos</a>
+                <% } else { %>
+                    No hay barberos registrados aún.
+                <% } %>
+            </div>
         <% } %>
     </div>
 </div>
